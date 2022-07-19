@@ -1,12 +1,11 @@
 clear;
 clc;
 close all;
-
+img_name = '2.jpg';
 img_path = 'imgs\2.jpg';
-data_save_name = '2_img_coeffs'
 img = imread(img_path);
 frac_dim_level = 2.5;
-eig_cor_matrix = 2500;
+eig_cor_matrix_level = 2500;
 level = 10;
 bin_level = 0.3;
 
@@ -163,27 +162,65 @@ for i = 2:A
     mz = max(eig(real(r_x)));
     v(i,5) = mz;
 end
-e = [];
+e = [0,0];
 for i = 2:A
-    if((v(i,5) >= eig_cor_matrix) & (v(i,6) >= frac_dim_level))
+    if((v(i,5) >= eig_cor_matrix_level) & (v(i,6) >= frac_dim_level))
         r = 1;
     else
         r = 0;
     end
     e = [e;i,r;];
 end
-DO = [];
-DO_coord = [];
+DO = [0,0,0,0,0,0,0,0,0,0];
+DO_coord = [0,0,0,0];
 for i = 1:A
     if (e(i, 2) == 1)
         DO = [DO; v(i,:)];
         DO_coord = [DO_coord;  v(i,3), v(i,1), v(i,4)-v(i,3), v(i,2)-v(i,1);];
     end
 end
-    
 
-output = insertShape(img, 'rectangle',DO_coord ,'LineWidth',2);
+[n_real_DO, n_marks] = size(DO_coord);
+output = img;
+for i = 2:n_real_DO  
+    output = insertShape(output, 'rectangle',DO_coord, 'LineWidth',2);
+end
 imshow(output)
 
+
+answ = input('Do you want enter data in the table ?  1-YES/0-NO ');
+if (answ == 1)
+    if (exist('True_DO_coefs.txt', 'file') == 2)&(exist('All_DO_coefs.txt', 'file') == 2)
+        True_DO_coefs = readtable('True_DO_coefs.txt');
+        All_DO_coefs = readtable('All_DO_coefs.txt');        
+    else
+        Number_on_img = []; 
+        Img_name = []; 
+        X = [];
+        Y = [];
+        Width = [];
+        High  = [];
+        Wc_coef_level = [];
+        Bin_level = [];
+        Fractal_dim_level = [];
+        Eigenvalue_of_matrix_level = [];
+        Fractal_dim = [];
+        Eigenvalue_of_matrix = [];
+        Answer = [];
+        True_DO_coefs = table(Number_on_img,Img_name,X,Y,Width, High,Wc_coef_level, Bin_level,Fractal_dim_level,Eigenvalue_of_matrix_level,Fractal_dim,Eigenvalue_of_matrix,Answer);              
+        All_DO_coefs = True_DO_coefs;                        
+    end
+    for i = 2:A 
+        cell_DO = {i-1, img_name, v(i,3), v(i,1), v(i,4)-v(i,3), v(i,2)-v(i,1),level, bin_level, frac_dim_level, eig_cor_matrix_level, v(i,6),v(i,5), e(i, 2)};
+        All_DO_coefs = [All_DO_coefs; cell_DO];
+        if (e(i, 2) == 1)
+            True_DO_coefs = [True_DO_coefs;cell_DO];
+        end
+    end
+    writetable(True_DO_coefs,'True_DO_coefs.txt');
+    writetable(All_DO_coefs, 'All_DO_coefs.txt');
+end
+    
+    
 
 
