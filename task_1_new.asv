@@ -202,8 +202,8 @@ figure,imshow(output);
 answ = input('Do you want enter data in the table ?  1-YES/0-NO ');
 if (answ == 1)
     if (exist('True_DO_coefs.xlsx', 'file') == 2)&&(exist('All_DO_coefs.xlsx', 'file') == 2)
-        True_DO_coefs = readtable('True_DO_coefs.xlsx');
-        All_DO_coefs = readtable('All_DO_coefs.xlsx');        
+        True_DO_coefs = readtable('True_DO_coefs.txt');
+        All_DO_coefs = readtable('All_DO_coefs.txt');        
     else
         Number_on_img = []; 
         Img_name = []; 
@@ -229,8 +229,8 @@ if (answ == 1)
             True_DO_coefs = [True_DO_coefs;cell_DO];
         end
     end
-    writetable(True_DO_coefs,'True_DO_coefs.xlsx');
-    writetable(All_DO_coefs, 'All_DO_coefs.xlsx');
+    writetable(True_DO_coefs,'True_DO_coefs.txt');
+    writetable(All_DO_coefs, 'All_DO_coefs.txt');
 end
     
     
