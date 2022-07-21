@@ -2,12 +2,13 @@ clear;
 clc;
 close all;
 
-img_name = '2.jpg';
-img_path = 'imgs\2.jpg';
+img_name = '1.jpg';
+img_path = 'imgs\1.jpg';
 img = imread(img_path);
-frac_dim_level = 2.3;
-eig_cor_matrix_level = 1000;
-level = 12;
+frac_dim_level_min = 2.43;
+frac_dim_level_max = 3.3;
+eig_cor_matrix_level = 1100;
+level = 10;
 
 
 img = rgb2gray(img);
@@ -166,7 +167,7 @@ end
 
 e = [0,0];
 for i = 2:A
-    if(v(i,5) >= eig_cor_matrix_level && v(i,6) >= frac_dim_level)
+    if(v(i,5) >= eig_cor_matrix_level && (v(i,6) >= frac_dim_level_min && v(i,6) <= frac_dim_level_max))
         r = 1;
     else
         r = 0;
@@ -201,9 +202,9 @@ figure,imshow(output);
 
 answ = input('Do you want enter data in the table ?  1-YES/0-NO ');
 if (answ == 1)
-    if (exist('True_DO_coefs.xlsx', 'file') == 2)&&(exist('All_DO_coefs.xlsx', 'file') == 2)
-        True_DO_coefs = readtable('True_DO_coefs.txt');
-        All_DO_coefs = readtable('All_DO_coefs.txt');        
+    if (exist('True_DO_coefs.csv', 'file') == 2)&&(exist('All_DO_coefs.csv', 'file') == 2)
+        True_DO_coefs = readtable('True_DO_coefs.csv');
+        All_DO_coefs = readtable('All_DO_coefs.csv');        
     else
         Number_on_img = []; 
         Img_name = []; 
@@ -214,25 +215,27 @@ if (answ == 1)
         Mean_brightness = [];
         Img_std = [];
         Wc_coef_level = [];
-        Fractal_dim_level = [];
+        Fractal_dim_level_min = [];
+        Fractal_dim_level_max = [];
         Eigenvalue_of_matrix_level = [];
         Fractal_dim = [];
         Eigenvalue_of_matrix = [];
         Answer = [];
-        True_DO_coefs = table(Number_on_img,Img_name,X,Y,Width, High, Mean_brightness, Img_std, Wc_coef_level,Fractal_dim_level,Eigenvalue_of_matrix_level,Fractal_dim,Eigenvalue_of_matrix,Answer);              
+        True_DO_coefs = table(Number_on_img,Img_name,X,Y,Width, High, Mean_brightness, Img_std, Wc_coef_level,Fractal_dim_level_min,Fractal_dim_level_max,Eigenvalue_of_matrix_level,Fractal_dim,Eigenvalue_of_matrix,Answer);              
         All_DO_coefs = True_DO_coefs;                        
     end
     for i = 2:A 
-        cell_DO = {i-1, img_name, v(i,3), v(i,1), v(i,4)-v(i,3), v(i,2)-v(i,1),mean_bright, img_std, level, frac_dim_level, eig_cor_matrix_level, v(i,6),v(i,5), e(i, 2)};
+        cell_DO = {i-1, img_name, v(i,3), v(i,1), v(i,4)-v(i,3), v(i,2)-v(i,1),mean_bright, img_std, level, frac_dim_level_min,frac_dim_level_max, eig_cor_matrix_level, v(i,6),v(i,5), e(i, 2)};
         All_DO_coefs = [All_DO_coefs; cell_DO];
         if (e(i, 2) == 1)
-            True_DO_coefs = [True_DO_coefs;cell_DO];
+            True_DO_coefs = [True_DO_coefs; cell_DO];
         end
     end
-    writetable(True_DO_coefs,'True_DO_coefs.txt');
-    writetable(All_DO_coefs, 'All_DO_coefs.txt');
+    writetable(True_DO_coefs,'True_DO_coefs.csv');
+    close('all')
+    writetable(All_DO_coefs, 'All_DO_coefs.csv');
+    close('all')
 end
-    
     
 
 
