@@ -1,16 +1,5 @@
-clear;
-clc;
-close all;
-
-img_name = '1.jpg';
-img_path = 'imgs\1.jpg';
-img = imread(img_path);
-frac_dim_level_min = 2.43;
-frac_dim_level_max = 3.3;
-eig_cor_matrix_level = 1100;
-level = 10;
-
-
+function [DO_coord] = task_1(img, img_name, frac_dim_level_min,frac_dim_level_max,eig_cor_matrix_level,level )
+img_col = img;
 img = rgb2gray(img);
 img = im2double(img);
 
@@ -55,10 +44,8 @@ for i = 1:M
     end
 end
 
-%BW = im2bw(mass_img_none_all, bin_level);
 BW = imbinarize(mass_img_none_all,'adaptive');
 BW = imfill(BW, 8, 'holes');
-figure,imshow(BW)
 for k = 1:50
     for i = 1:M-1
         for j=1:N-1
@@ -90,7 +77,7 @@ for i = 1:M
             end
             if((d ~= 1) && (k ~= 1))
                 BW2(i:i + k, j:j + d) = 0;
-                v = [v;i, i+k, j, j+d, 0, 0, 0, 0, 0, 0;];
+                v = [v;i, i+k-1, j, j+d-1, 0, 0, 0, 0, 0, 0;];
             end
         end
     end
@@ -99,7 +86,7 @@ end
 [A, L] = size(v);
 
 for i = 2:A
-    mass = img(v(i,1):v(i,2)-1, v(i,3):v(i,4)-1) * 255;
+    mass = img(v(i,1):v(i,2), v(i,3):v(i,4)) * 255;
     [M,N] = size(mass);
     if (M > N) 
         a = N;
@@ -143,7 +130,7 @@ for i = 2:A
 end
 
 for i = 2:A
-    cam = img(v(i,1):v(i,2)-1, v(i,3):v(i,4)-1) * 255;
+    cam = img(v(i,1):v(i,2), v(i,3):v(i,4)) * 255;
     [M,N] = size(cam);
     if(M>N) N=M; end
     if(M<N) M=N; end
@@ -161,6 +148,8 @@ for i = 2:A
     r_x = (sigma2_x * rho.^sqrt(rr.^2+cc.^2));
     mz = max(eig(real(r_x)));
     v(i,5) = mz;
+    v(i,7) = mean_x;
+    v(i,8) = sigma2_x;
 end
 
 
@@ -183,22 +172,22 @@ for i = 1:A
     end
 end
 
-output = img;
+output = img_col;
 for i = 2:A   
     output = insertShape(output, 'rectangle',[v(i,3), v(i,1), v(i,4)-v(i,3), v(i,2)-v(i,1)] ,'LineWidth',2);
-    output = insertText(output,[v(i,3),v(i,1)], num2str(i),'FontSize', 10, 'TextColor','green','BoxOpacity',0);
+    %output = insertText(output,[v(i,3),v(i,1)], num2str(i),'FontSize', 10, 'TextColor','green','BoxOpacity',0);
 end
 figure,imshow(output);
-
+all_DO = output;
 
 [n_real_DO, n_marks] = size(DO_coord);
-output = img;
+output = img_col;
 for i = 2:n_real_DO  
     output = insertShape(output, 'rectangle',DO_coord, 'LineWidth',2);
     output = insertText(output,[DO_coord(i,1),DO_coord(i,2)], num2str(i),'FontSize', 10, 'TextColor','green','BoxOpacity',0);
 end
 figure,imshow(output);
-
+true_DO = output;
 
 answ = input('Do you want enter data in the table ?  1-YES/0-NO ');
 if (answ == 1)
@@ -212,7 +201,9 @@ if (answ == 1)
         Y = [];
         Width = [];
         High  = [];
-        Mean_brightness = [];
+        Window_mean = [];
+        Window_std = [];
+        Img_mean = [];
         Img_std = [];
         Wc_coef_level = [];
         Fractal_dim_level_min = [];
@@ -221,21 +212,32 @@ if (answ == 1)
         Fractal_dim = [];
         Eigenvalue_of_matrix = [];
         Answer = [];
-        True_DO_coefs = table(Number_on_img,Img_name,X,Y,Width, High, Mean_brightness, Img_std, Wc_coef_level,Fractal_dim_level_min,Fractal_dim_level_max,Eigenvalue_of_matrix_level,Fractal_dim,Eigenvalue_of_matrix,Answer);              
+        True_DO_coefs = table(Number_on_img,Img_name,X,Y,Width, High, Window_mean, Window_std, Img_mean, Img_std, Wc_coef_level,Fractal_dim_level_min,Fractal_dim_level_max,Eigenvalue_of_matrix_level,Fractal_dim,Eigenvalue_of_matrix,Answer);              
         All_DO_coefs = True_DO_coefs;                        
     end
     for i = 2:A 
-        cell_DO = {i-1, img_name, v(i,3), v(i,1), v(i,4)-v(i,3), v(i,2)-v(i,1),mean_bright, img_std, level, frac_dim_level_min,frac_dim_level_max, eig_cor_matrix_level, v(i,6),v(i,5), e(i, 2)};
+        cell_DO = {i-1, img_name, v(i,3), v(i,1), v(i,4)-v(i,3), v(i,2)-v(i,1),v(i,7), v(i,8), mean_bright, img_std, level, frac_dim_level_min,frac_dim_level_max, eig_cor_matrix_level, v(i,6),v(i,5), e(i, 2)};
         All_DO_coefs = [All_DO_coefs; cell_DO];
         if (e(i, 2) == 1)
             True_DO_coefs = [True_DO_coefs; cell_DO];
         end
     end
+    close('all')
     writetable(True_DO_coefs,'True_DO_coefs.csv');
     close('all')
     writetable(All_DO_coefs, 'All_DO_coefs.csv');
     close('all')
 end
-    
-
-
+answ = input('Do you want save imgs ?  1-YES/0-NO ');
+if (answ == 1)
+    if (exist('All_DO', 'dir') == 7 && exist('True_DO', 'dir') == 7)
+        imwrite(all_DO ,strcat('All_DO\',img_name,'all_detected_DO.png'))
+        imwrite(true_DO ,strcat('True_DO\',img_name,'true_detected_DO.png'))
+    else 
+        mkdir All_DO;
+        mkdir True_DO;
+        imwrite(all_DO ,strcat('All_DO\',img_name,'all_detected_DO.png'))
+        imwrite(true_DO ,strcat('True_DO\',img_name,'true_detected_DO.png'))
+    end
+end
+end
